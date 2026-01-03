@@ -35,24 +35,32 @@ const EmployeeDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/dashboard/employee-stats`, { 
-        withCredentials: true 
-      });
+      
+      // Fetch all data in parallel
+      const [dashboardRes, salaryRes] = await Promise.all([
+        axios.get(`${API_URL}/dashboard/employee-stats`, { withCredentials: true }),
+        axios.get(`${API_URL}/salary/my-salary`, { withCredentials: true }).catch(() => ({ data: { data: null } }))
+      ]);
 
-      const dashboardData = response.data.data;
+      console.log('Dashboard API Response:', dashboardRes.data);
+      console.log('Salary API Response:', salaryRes.data);
+
+      const dashboardData = dashboardRes.data.data;
+      const salaryData = salaryRes.data.data;
       
       setStats({
-        attendanceRate: dashboardData.stats.attendanceRate,
-        leavesRemaining: dashboardData.stats.leavesRemaining,
-        pendingLeaves: dashboardData.stats.pendingLeaves,
-        netSalary: dashboardData.stats.netSalary,
+        attendanceRate: dashboardData?.stats?.attendanceRate || 0,
+        leavesRemaining: dashboardData?.stats?.leavesRemaining || 0,
+        pendingLeaves: dashboardData?.stats?.pendingLeaves || 0,
+        netSalary: salaryData?.netSalary || 0,
         totalLeavesTaken: 0
       });
 
       setLoading(false);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      toast.error('Failed to load dashboard data');
+      console.error('Error response:', error.response?.data);
+      toast.error(error.response?.data?.message || 'Failed to load dashboard data');
       setLoading(false);
     }
   };
@@ -162,7 +170,7 @@ const EmployeeDashboard = () => {
             <div>
               <p className="text-sm text-gray-600 mb-1">Leaves Remaining</p>
               <p className="text-3xl font-bold text-[#A1CCA6]">
-                {loading ? '...' : stats.leavesRemaining}
+                {loading ? '...' : `${stats.leavesRemaining} days`}
               </p>
             </div>
             <div className="w-12 h-12 bg-[#A1CCA6]/10 rounded-lg flex items-center justify-center">
@@ -176,7 +184,7 @@ const EmployeeDashboard = () => {
             <div>
               <p className="text-sm text-gray-600 mb-1">Pending Leaves</p>
               <p className="text-3xl font-bold text-[#F9D779]">
-                {loading ? '...' : stats.pendingLeaves}
+                {loading ? '...' : `${stats.pendingLeaves} requests`}
               </p>
             </div>
             <div className="w-12 h-12 bg-[#F9D779]/10 rounded-lg flex items-center justify-center">
@@ -190,7 +198,7 @@ const EmployeeDashboard = () => {
             <div>
               <p className="text-sm text-gray-600 mb-1">Net Salary</p>
               <p className="text-2xl font-bold text-[#23CED9]">
-                {loading ? '...' : `₹${stats.netSalary.toLocaleString('en-IN')}`}
+                {loading ? '...' : stats.netSalary > 0 ? `₹${stats.netSalary.toLocaleString('en-IN')}` : 'Not Set'}
               </p>
             </div>
             <div className="w-12 h-12 bg-[#23CED9]/10 rounded-lg flex items-center justify-center">

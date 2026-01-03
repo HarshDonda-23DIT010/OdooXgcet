@@ -1,7 +1,6 @@
 import Attendance from "../model/attendance.model.js";
 import Employee from "../model/employee.model.js";
 import LeaveRequest from "../model/leaveRequest.model.js";
-import LeaveType from "../model/leaveType.model.js";
 import Salary from "../model/salary.model.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { ApiError } from "../utils/apiError.js";
@@ -30,15 +29,19 @@ export const getEmployeeDashboardStats = async (req, res) => {
     const totalDays = attendanceRecords.length;
     const attendanceRate = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
 
-    // Get leave balance
+    // Get leave balance with string-based leave types
     const currentYear = new Date().getFullYear();
-    const leaveTypes = await LeaveType.find({ companyId: employee.companyId });
+    const leaveTypesConfig = [
+      { name: 'Casual Leave', maxDays: 8 },
+      { name: 'Annual Leave', maxDays: 15 },
+      { name: 'Emergency Leave', maxDays: 3 }
+    ];
     
     const leaveBalance = await Promise.all(
-      leaveTypes.map(async (leaveType) => {
+      leaveTypesConfig.map(async (leaveType) => {
         const approvedLeaves = await LeaveRequest.find({
           employeeId: employee._id,
-          leaveType: leaveType._id,
+          leaveType: leaveType.name,
           status: 'APPROVED',
           startDate: {
             $gte: new Date(currentYear, 0, 1),
@@ -84,8 +87,7 @@ export const getEmployeeDashboardStats = async (req, res) => {
       employeeId: employee._id
     })
       .sort({ createdAt: -1 })
-      .limit(3)
-      .populate('leaveType', 'name');
+      .limit(3);
 
     return res.status(200).json(
       new ApiResponse(
