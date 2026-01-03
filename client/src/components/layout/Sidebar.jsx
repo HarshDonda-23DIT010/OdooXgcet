@@ -100,8 +100,16 @@ const Sidebar = () => {
           {isOpen && (
             <div className="p-4 border-b border-white/20">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                  <UserCircle className="h-8 w-8" />
+                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
+                  {user?.employee?.profileImage ? (
+                    <img 
+                      src={user.employee.profileImage} 
+                      alt="Profile" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <UserCircle className="h-8 w-8" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm truncate">
