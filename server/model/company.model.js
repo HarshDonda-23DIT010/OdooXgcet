@@ -6,6 +6,15 @@ const companySchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        email: {
+            type: String,
+        },
+        phone: {
+            type: String,
+        },
+        address: {
+            type: String,
+        },
         logoUrl: {
             type: String,
         },
