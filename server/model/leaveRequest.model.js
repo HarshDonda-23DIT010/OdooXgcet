@@ -13,10 +13,14 @@ const leaveRequestSchema = new mongoose.Schema(
             required: true,
         },
 
+        leaveType: {
+            type: String,
+            required: true,
+        },
+
         leaveTypeId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "LeaveType",
-            required: true,
         },
 
         startDate: Date,

@@ -162,53 +162,6 @@ const Payroll = () => {
         </>
       )}
 
-      {/* Salary History */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-[#097087]" />
-            Salary History
-          </h2>
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#097087] focus:border-transparent"
-          >
-            {years.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-50 border-b">
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Month</th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Basic Salary</th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Allowances</th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Gross Salary</th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Deductions</th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Net Salary</th>
-              </tr>
-            </thead>
-            <tbody>
-              {salaryHistory.map((record, index) => (
-                <tr key={index} className="border-b hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{record.month}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900 text-right">{formatCurrency(record.basicSalary)}</td>
-                  <td className="px-4 py-3 text-sm text-green-600 text-right">{formatCurrency(record.totalAllowances)}</td>
-                  <td className="px-4 py-3 text-sm text-blue-600 text-right font-medium">{formatCurrency(record.grossSalary)}</td>
-                  <td className="px-4 py-3 text-sm text-red-600 text-right">{formatCurrency(record.totalDeductions)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900 text-right font-bold">{formatCurrency(record.netSalary)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
 
       {/* Info Note */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">

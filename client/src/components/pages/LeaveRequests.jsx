@@ -12,7 +12,7 @@ const LeaveRequests = () => {
     reason: ''
   });
 
-  const leaveTypes = ['Sick Leave', 'Casual Leave', 'Annual Leave', 'Emergency Leave'];
+  const leaveTypes = ['Casual Leave', 'Annual Leave', 'Emergency Leave'];
   
   const leaveRequests = [
     {
@@ -48,7 +48,6 @@ const LeaveRequests = () => {
   ];
 
   const leaveBalance = {
-    sick: 5,
     casual: 8,
     annual: 15,
     emergency: 3
@@ -115,12 +114,7 @@ const LeaveRequests = () => {
       </div>
 
       {/* Leave Balance */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl p-6 shadow-lg border-l-4 border-[#097087]">
-          <p className="text-sm text-gray-600 mb-1">Sick Leave</p>
-          <p className="text-3xl font-bold text-[#097087]">{leaveBalance.sick}</p>
-          <p className="text-xs text-gray-500 mt-1">days available</p>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl p-6 shadow-lg border-l-4 border-[#23CED9]">
           <p className="text-sm text-gray-600 mb-1">Casual Leave</p>
           <p className="text-3xl font-bold text-[#23CED9]">{leaveBalance.casual}</p>

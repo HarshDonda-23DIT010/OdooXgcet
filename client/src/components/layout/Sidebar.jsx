@@ -42,9 +42,7 @@ const Sidebar = () => {
     { path: '/attendance-management', icon: Calendar, label: 'Attendance Management' },
     { path: '/leave-approvals', icon: CheckSquare, label: 'Leave Approvals' },
     { path: '/payroll-management', icon: DollarSign, label: 'Payroll Management' },
-    { path: '/departments', icon: Briefcase, label: 'Departments' },
     { path: '/profile', icon: UserCircle, label: 'My Profile' },
-    { path: '/settings', icon: Settings, label: 'Settings' },
   ];
 
   const menuItems = isAdmin ? adminMenuItems : employeeMenuItems;

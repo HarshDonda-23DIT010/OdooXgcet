@@ -25,16 +25,6 @@ export const applyLeave = async (req, res) => {
       throw new ApiError(404, "Employee profile not found");
     }
 
-    // Find leave type
-    const leaveTypeDoc = await LeaveType.findOne({ 
-      name: leaveType, 
-      companyId: employee.companyId 
-    });
-
-    if (!leaveTypeDoc) {
-      throw new ApiError(404, "Leave type not found");
-    }
-
     // Calculate total days
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -44,13 +34,26 @@ export const applyLeave = async (req, res) => {
       throw new ApiError(400, "End date must be after start date");
     }
 
+    // Define maximum days per leave type
+    const leaveTypeLimits = {
+      'Casual Leave': 8,
+      'Annual Leave': 15,
+      'Emergency Leave': 3
+    };
+
+    const maxDaysAllowed = leaveTypeLimits[leaveType];
+    
+    if (!maxDaysAllowed) {
+      throw new ApiError(400, `Invalid leave type: ${leaveType}. Valid types are: Casual Leave, Annual Leave, Emergency Leave`);
+    }
+
     // Check if employee has enough leave balance
     const currentYear = new Date().getFullYear();
     const usedLeaves = await LeaveRequest.aggregate([
       {
         $match: {
           employeeId: employee._id,
-          leaveTypeId: leaveTypeDoc._id,
+          leaveType: leaveType,
           status: "APPROVED",
           startDate: {
             $gte: new Date(`${currentYear}-01-01`),
@@ -67,17 +70,25 @@ export const applyLeave = async (req, res) => {
     ]);
 
     const usedDays = usedLeaves.length > 0 ? usedLeaves[0].total : 0;
-    const remainingDays = leaveTypeDoc.maxDaysPerYear - usedDays;
+    const remainingDays = maxDaysAllowed - usedDays;
+
+    console.log('Leave Application Debug:', {
+      leaveType,
+      maxDaysAllowed,
+      usedDays,
+      remainingDays,
+      requestedDays: totalDays
+    });
 
     if (totalDays > remainingDays) {
-      throw new ApiError(400, `Insufficient leave balance. Available: ${remainingDays} days`);
+      throw new ApiError(400, `Insufficient leave balance. Available: ${remainingDays} days, Requested: ${totalDays} days`);
     }
 
     // Create leave request
     const leaveRequest = await LeaveRequest.create({
       employeeId: employee._id,
       companyId: employee.companyId,
-      leaveTypeId: leaveTypeDoc._id,
+      leaveType: leaveType,
       startDate,
       endDate,
       totalDays,
@@ -86,8 +97,7 @@ export const applyLeave = async (req, res) => {
     });
 
     const populatedLeave = await LeaveRequest.findById(leaveRequest._id)
-      .populate('employeeId', 'firstName lastName employeeCode')
-      .populate('leaveTypeId', 'name');
+      .populate('employeeId', 'firstName lastName employeeCode');
 
     res.status(201).json(
       new ApiResponse(201, populatedLeave, "Leave request submitted successfully")
@@ -126,7 +136,6 @@ export const getMyLeaveRequests = async (req, res) => {
     }
 
     const leaveRequests = await LeaveRequest.find(query)
-      .populate('leaveTypeId', 'name maxDaysPerYear')
       .populate('approvedBy', 'email')
       .sort({ createdAt: -1 });
 
@@ -151,18 +160,22 @@ export const getMyLeaveBalance = async (req, res) => {
       throw new ApiError(404, "Employee profile not found");
     }
 
-    // Get all leave types
-    const leaveTypes = await LeaveType.find({ companyId: employee.companyId });
+    // Define leave types and their limits
+    const leaveTypesConfig = [
+      { name: 'Casual Leave', maxDays: 8 },
+      { name: 'Annual Leave', maxDays: 15 },
+      { name: 'Emergency Leave', maxDays: 3 }
+    ];
 
     // Calculate balance for each leave type
     const currentYear = new Date().getFullYear();
     const balances = await Promise.all(
-      leaveTypes.map(async (leaveType) => {
+      leaveTypesConfig.map(async (leaveTypeConfig) => {
         const usedLeaves = await LeaveRequest.aggregate([
           {
             $match: {
               employeeId: employee._id,
-              leaveTypeId: leaveType._id,
+              leaveType: leaveTypeConfig.name,
               status: "APPROVED",
               startDate: {
                 $gte: new Date(`${currentYear}-01-01`),
@@ -181,10 +194,11 @@ export const getMyLeaveBalance = async (req, res) => {
         const usedDays = usedLeaves.length > 0 ? usedLeaves[0].total : 0;
 
         return {
-          leaveType: leaveType.name,
-          totalAllowed: leaveType.maxDaysPerYear,
+          leaveType: leaveTypeConfig.name,
+          total: leaveTypeConfig.maxDays,
+          totalAllowed: leaveTypeConfig.maxDays,
           used: usedDays,
-          remaining: leaveType.maxDaysPerYear - usedDays
+          remaining: leaveTypeConfig.maxDays - usedDays
         };
       })
     );

@@ -14,7 +14,9 @@ import {
   Filter,
   Download,
   Eye,
-  Edit
+  Edit,
+  DollarSign,
+  AlertCircle
 } from 'lucide-react';
 
 const API_URL = 'http://localhost:5000/api';
@@ -32,7 +34,8 @@ const AdminDashboard = () => {
     absentToday: 0,
     pendingLeaves: 0,
     approvedLeaves: 0,
-    attendanceRate: 0
+    attendanceRate: 0,
+    totalPayroll: 0
   });
 
   const [recentEmployees, setRecentEmployees] = useState([]);
@@ -55,69 +58,38 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
 
-      // Fetch all employees
-      const employeesResponse = await axios.get(`${API_URL}/profile/all`, {
-        withCredentials: true
-      });
-      const employees = employeesResponse.data.data || [];
-
-      // Fetch today's attendance using startDate and endDate
-      const today = new Date();
-      const todayStart = new Date(today.setHours(0, 0, 0, 0)).toISOString().split('T')[0];
-      const todayEnd = new Date(today.setHours(23, 59, 59, 999)).toISOString().split('T')[0];
-      
-      const attendanceResponse = await axios.get(`${API_URL}/attendance/all`, {
-        params: { 
-          startDate: todayStart,
-          endDate: todayEnd,
-          limit: 1000
-        },
+      // Fetch dashboard stats from optimized endpoint
+      const dashboardResponse = await axios.get(`${API_URL}/dashboard/admin-stats`, {
         withCredentials: true
       });
       
-      const todayAttendance = attendanceResponse.data.data?.attendance || [];
+      const dashboardData = dashboardResponse.data.data;
 
-      // Calculate stats
-      const totalEmployees = employees.length;
-      const presentToday = todayAttendance.filter(a => 
-        a.status === 'Present' || a.status === 'Half-day'
-      ).length;
-      const absentToday = totalEmployees - presentToday;
-      const attendanceRate = totalEmployees > 0 
-        ? Math.round((presentToday / totalEmployees) * 100) 
-        : 0;
-
+      // Set stats from dashboard endpoint
       setStats({
-        totalEmployees,
-        presentToday,
-        absentToday,
-        pendingLeaves: 0,
-        approvedLeaves: 0,
-        attendanceRate
+        totalEmployees: dashboardData.stats.totalEmployees,
+        presentToday: dashboardData.stats.presentToday,
+        absentToday: dashboardData.stats.absentToday,
+        pendingLeaves: dashboardData.stats.pendingLeaves,
+        approvedLeaves: dashboardData.stats.approvedLeaves,
+        attendanceRate: dashboardData.stats.totalEmployees > 0 
+          ? Math.round((dashboardData.stats.presentToday / dashboardData.stats.totalEmployees) * 100) 
+          : 0,
+        totalPayroll: dashboardData.stats.totalPayroll
       });
 
-      // Set recent employees with today's attendance status
-      const employeesWithStatus = employees.slice(0, 10).map(emp => {
-        const attendance = todayAttendance.find(a => {
-          const empId = a.employeeId?._id || a.employeeId;
-          return empId?.toString() === emp._id?.toString();
-        });
-        
-        let status = 'Absent';
-        if (attendance) {
-          if (attendance.status === 'Present') status = 'Present';
-          else if (attendance.status === 'Half-day') status = 'Present';
-          else if (attendance.status === 'Leave') status = 'On Leave';
-        }
-        
+      // Transform recent attendance into employee list
+      const employeesWithStatus = dashboardData.recentActivities.attendance.map(att => {
+        const emp = att.employeeId;
         return {
           id: emp._id,
           name: `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || 'N/A',
           employeeId: emp.employeeCode || 'N/A',
           department: emp.department || 'N/A',
-          status: status,
-          email: emp.userId?.email || emp.email || 'N/A',
-          profileImage: emp.profileImage || null
+          status: att.status,
+          email: emp.email || 'N/A',
+          profileImage: emp.profileImage || null,
+          date: new Date(att.date).toLocaleDateString()
         };
       });
       
@@ -275,13 +247,14 @@ const AdminDashboard = () => {
               <div>
                 <p className="text-sm text-gray-600 mb-1">Approved Leaves</p>
                 <p className="text-3xl font-bold text-[#A1CCA6]">{stats.approvedLeaves}</p>
-                <p className="text-xs text-gray-500 mt-1">Coming soon</p>
+                <p className="text-xs text-gray-500 mt-1">This year</p>
               </div>
               <div className="w-14 h-14 bg-[#A1CCA6]/10 rounded-xl flex items-center justify-center">
                 <Calendar className="w-7 h-7 text-[#A1CCA6]" />
               </div>
             </div>
           </div>
+
         </div>
       )}
 

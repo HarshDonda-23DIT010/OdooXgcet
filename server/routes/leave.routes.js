@@ -15,6 +15,7 @@ import {
   getLeaveTypes,
   createLeaveType
 } from '../controllers/leave.controller.js';
+import { initializeLeaveTypes } from '../controllers/initLeaveTypes.controller.js';
 import { isAuthenticated } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
@@ -33,5 +34,6 @@ router.get('/statistics', isAuthenticated, getLeaveStatistics);
 // Common routes
 router.get('/types', isAuthenticated, getLeaveTypes);
 router.post('/types', isAuthenticated, createLeaveType);
+router.post('/init-types', isAuthenticated, initializeLeaveTypes);
 
 export default router;

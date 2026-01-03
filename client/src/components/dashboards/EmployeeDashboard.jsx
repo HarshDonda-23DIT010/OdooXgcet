@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 import {
   UserCircle,
   Clock,
@@ -9,17 +11,51 @@ import {
   TrendingUp,
   AlertCircle,
   CheckCircle,
-  XCircle
+  XCircle,
+  DollarSign
 } from 'lucide-react';
+
+const API_URL = 'http://localhost:5000/api';
 
 const EmployeeDashboard = () => {
   const { user } = useSelector((state) => state.auth);
   const [stats, setStats] = useState({
-    attendanceRate: 95,
-    leavesAvailable: 12,
-    pendingRequests: 2,
-    hoursWorked: 160
+    attendanceRate: 0,
+    leavesRemaining: 0,
+    pendingLeaves: 0,
+    netSalary: 0,
+    totalLeavesTaken: 0
   });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/dashboard/employee-stats`, { 
+        withCredentials: true 
+      });
+
+      const dashboardData = response.data.data;
+      
+      setStats({
+        attendanceRate: dashboardData.stats.attendanceRate,
+        leavesRemaining: dashboardData.stats.leavesRemaining,
+        pendingLeaves: dashboardData.stats.pendingLeaves,
+        netSalary: dashboardData.stats.netSalary,
+        totalLeavesTaken: 0
+      });
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      toast.error('Failed to load dashboard data');
+      setLoading(false);
+    }
+  };
 
   const quickAccessCards = [
     {
@@ -37,18 +73,18 @@ const EmployeeDashboard = () => {
       description: 'Mark attendance and view history'
     },
     {
-      title: 'Leave Requests',
+      title: 'Leave Management',
       icon: FileText,
       color: 'from-[#FCA47C] to-[#F9D779]',
-      link: '/leave-requests',
+      link: '/leave',
       description: 'Apply for leave and track status'
     },
     {
-      title: 'Calendar',
-      icon: Calendar,
+      title: 'My Payroll',
+      icon: DollarSign,
       color: 'from-[#A1CCA6] to-[#F9D779]',
-      link: '/calendar',
-      description: 'View holidays and events'
+      link: '/payroll',
+      description: 'View salary details and payment history'
     }
   ];
 
@@ -89,11 +125,11 @@ const EmployeeDashboard = () => {
               Welcome back, {user?.employee?.firstName}! 👋
             </h1>
             <p className="text-white/90">
-              {new Date().toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+              {new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
               })}
             </p>
           </div>
@@ -111,7 +147,9 @@ const EmployeeDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
-              <p className="text-3xl font-bold text-[#097087]">{stats.attendanceRate}%</p>
+              <p className="text-3xl font-bold text-[#097087]">
+                {loading ? '...' : `${stats.attendanceRate}%`}
+              </p>
             </div>
             <div className="w-12 h-12 bg-[#097087]/10 rounded-lg flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-[#097087]" />
@@ -122,8 +160,10 @@ const EmployeeDashboard = () => {
         <div className="bg-white rounded-xl p-6 shadow-lg border-l-4 border-[#A1CCA6]">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Leaves Available</p>
-              <p className="text-3xl font-bold text-[#A1CCA6]">{stats.leavesAvailable}</p>
+              <p className="text-sm text-gray-600 mb-1">Leaves Remaining</p>
+              <p className="text-3xl font-bold text-[#A1CCA6]">
+                {loading ? '...' : stats.leavesRemaining}
+              </p>
             </div>
             <div className="w-12 h-12 bg-[#A1CCA6]/10 rounded-lg flex items-center justify-center">
               <Calendar className="w-6 h-6 text-[#A1CCA6]" />
@@ -134,8 +174,10 @@ const EmployeeDashboard = () => {
         <div className="bg-white rounded-xl p-6 shadow-lg border-l-4 border-[#F9D779]">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Pending Requests</p>
-              <p className="text-3xl font-bold text-[#F9D779]">{stats.pendingRequests}</p>
+              <p className="text-sm text-gray-600 mb-1">Pending Leaves</p>
+              <p className="text-3xl font-bold text-[#F9D779]">
+                {loading ? '...' : stats.pendingLeaves}
+              </p>
             </div>
             <div className="w-12 h-12 bg-[#F9D779]/10 rounded-lg flex items-center justify-center">
               <FileText className="w-6 h-6 text-[#F9D779]" />
@@ -146,11 +188,13 @@ const EmployeeDashboard = () => {
         <div className="bg-white rounded-xl p-6 shadow-lg border-l-4 border-[#23CED9]">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Hours Worked</p>
-              <p className="text-3xl font-bold text-[#23CED9]">{stats.hoursWorked}h</p>
+              <p className="text-sm text-gray-600 mb-1">Net Salary</p>
+              <p className="text-2xl font-bold text-[#23CED9]">
+                {loading ? '...' : `₹${stats.netSalary.toLocaleString('en-IN')}`}
+              </p>
             </div>
             <div className="w-12 h-12 bg-[#23CED9]/10 rounded-lg flex items-center justify-center">
-              <Clock className="w-6 h-6 text-[#23CED9]" />
+              <DollarSign className="w-6 h-6 text-[#23CED9]" />
             </div>
           </div>
         </div>

@@ -8,6 +8,7 @@ import profileRoutes from "./routes/profile.routes.js";
 import attendanceRoutes from "./routes/attendance.routes.js";
 import leaveRoutes from "./routes/leave.routes.js";
 import salaryRoutes from "./routes/salary.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/leave", leaveRoutes);
 app.use("/api/salary", salaryRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 console.log("All routes registered:");
 console.log("- /api/auth");
@@ -38,6 +40,7 @@ console.log("- /api/profile");
 console.log("- /api/attendance");
 console.log("- /api/leave");
 console.log("- /api/salary");
+console.log("- /api/dashboard");
 
 // Health check route
 app.get("/", (req, res) => {

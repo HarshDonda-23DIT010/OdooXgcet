@@ -6,11 +6,17 @@ import toast from 'react-hot-toast';
 const API_URL = 'http://localhost:5000/api';
 
 const LeaveManagement = () => {
-  const [leaveTypes, setLeaveTypes] = useState([]);
   const [leaveBalance, setLeaveBalance] = useState([]);
   const [myLeaves, setMyLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showApplyForm, setShowApplyForm] = useState(false);
+
+  // Hardcoded leave types
+  const leaveTypes = [
+    { _id: 'casual', name: 'Casual Leave' },
+    { _id: 'annual', name: 'Annual Leave' },
+    { _id: 'emergency', name: 'Emergency Leave' }
+  ];
 
   const [formData, setFormData] = useState({
     leaveType: '',
@@ -26,15 +32,15 @@ const LeaveManagement = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [typesRes, balanceRes, leavesRes] = await Promise.all([
-        axios.get(`${API_URL}/leave/types`, { withCredentials: true }),
+      
+      // Fetch balance and leaves only
+      const [balanceRes, leavesRes] = await Promise.all([
         axios.get(`${API_URL}/leave/my-balance`, { withCredentials: true }),
         axios.get(`${API_URL}/leave/my-leaves`, { withCredentials: true })
       ]);
 
-      setLeaveTypes(typesRes.data.data);
-      setLeaveBalance(balanceRes.data.data);
-      setMyLeaves(leavesRes.data.data);
+      setLeaveBalance(balanceRes.data.data || []);
+      setMyLeaves(leavesRes.data.data || []);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -186,11 +192,15 @@ const LeaveManagement = () => {
                   required
                 >
                   <option value="">Select Leave Type</option>
-                  {leaveTypes.map((type) => (
-                    <option key={type._id} value={type.name}>
-                      {type.name}
-                    </option>
-                  ))}
+                  {leaveTypes && leaveTypes.length > 0 ? (
+                    leaveTypes.map((type) => (
+                      <option key={type._id} value={type.name}>
+                        {type.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option disabled>Loading leave types...</option>
+                  )}
                 </select>
               </div>
 
@@ -305,7 +315,7 @@ const LeaveManagement = () => {
                 {myLeaves.map((leave) => (
                   <tr key={leave._id} className="border-b hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                      {leave.leaveTypeId?.name}
+                      {leave.leaveType || leave.leaveTypeId?.name || 'N/A'}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900">
                       {new Date(leave.startDate).toLocaleDateString()}
