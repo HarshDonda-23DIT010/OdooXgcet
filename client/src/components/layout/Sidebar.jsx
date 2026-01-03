@@ -37,7 +37,7 @@ const Sidebar = () => {
   const adminMenuItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/employees', icon: Users, label: 'Employees' },
-    { path: '/attendance-records', icon: Calendar, label: 'Attendance Records' },
+    { path: '/attendance-management', icon: Calendar, label: 'Attendance Management' },
     { path: '/leave-approvals', icon: CheckSquare, label: 'Leave Approvals' },
     { path: '/departments', icon: Briefcase, label: 'Departments' },
     { path: '/profile', icon: UserCircle, label: 'My Profile' },

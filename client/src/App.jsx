@@ -16,7 +16,8 @@ import ProtectedRoute from './components/ProtectedRoute'
 import EmployeeDashboard from './components/dashboards/EmployeeDashboard'
 import AdminDashboard from './components/dashboards/AdminDashboard'
 import ProfileNew from './components/pages/ProfileNew'
-import Attendance from './components/pages/Attendance'
+import AttendanceNew from './components/pages/AttendanceNew'
+import AdminAttendanceManagement from './components/pages/AdminAttendanceManagement'
 import LeaveRequests from './components/pages/LeaveRequests'
 
 function App() {
@@ -58,14 +59,14 @@ function App() {
           element={isAdmin ? <AdminDashboard /> : <EmployeeDashboard />} 
         />
         <Route path="profile" element={<ProfileNew />} />
-        <Route path="attendance" element={<Attendance />} />
+        <Route path="attendance" element={<AttendanceNew />} />
         <Route path="leave-requests" element={<LeaveRequests />} />
         
         {/* Admin/HR Only Routes */}
         {isAdmin && (
           <>
             <Route path="employees" element={<div>Employees Page Coming Soon</div>} />
-            <Route path="attendance-records" element={<div>Attendance Records Coming Soon</div>} />
+            <Route path="attendance-management" element={<AdminAttendanceManagement />} />
             <Route path="leave-approvals" element={<div>Leave Approvals Coming Soon</div>} />
             <Route path="departments" element={<div>Departments Coming Soon</div>} />
             <Route path="settings" element={<div>Settings Coming Soon</div>} />
