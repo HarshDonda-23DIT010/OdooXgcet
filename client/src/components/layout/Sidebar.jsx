@@ -15,7 +15,8 @@ import {
   X,
   CheckSquare,
   Settings,
-  Briefcase
+  Briefcase,
+  DollarSign
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -31,7 +32,8 @@ const Sidebar = () => {
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/profile', icon: UserCircle, label: 'My Profile' },
     { path: '/attendance', icon: Clock, label: 'Attendance' },
-    { path: '/leave-requests', icon: FileText, label: 'Leave Requests' },
+    { path: '/leave', icon: FileText, label: 'Leave Management' },
+    { path: '/payroll', icon: DollarSign, label: 'My Payroll' },
   ];
 
   const adminMenuItems = [
@@ -39,6 +41,7 @@ const Sidebar = () => {
     { path: '/employees', icon: Users, label: 'Employees' },
     { path: '/attendance-management', icon: Calendar, label: 'Attendance Management' },
     { path: '/leave-approvals', icon: CheckSquare, label: 'Leave Approvals' },
+    { path: '/payroll-management', icon: DollarSign, label: 'Payroll Management' },
     { path: '/departments', icon: Briefcase, label: 'Departments' },
     { path: '/profile', icon: UserCircle, label: 'My Profile' },
     { path: '/settings', icon: Settings, label: 'Settings' },

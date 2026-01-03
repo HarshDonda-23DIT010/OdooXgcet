@@ -18,7 +18,11 @@ import AdminDashboard from './components/dashboards/AdminDashboard'
 import ProfileNew from './components/pages/ProfileNew'
 import AttendanceNew from './components/pages/AttendanceNew'
 import AdminAttendanceManagement from './components/pages/AdminAttendanceManagement'
-import LeaveRequests from './components/pages/LeaveRequests'
+import EmployeeList from './components/pages/EmployeeList'
+import LeaveManagement from './components/pages/LeaveManagement'
+import AdminLeaveApproval from './components/pages/AdminLeaveApproval'
+import Payroll from './components/pages/Payroll'
+import AdminPayrollManagement from './components/pages/AdminPayrollManagement'
 
 function App() {
   const dispatch = useDispatch()
@@ -60,14 +64,16 @@ function App() {
         />
         <Route path="profile" element={<ProfileNew />} />
         <Route path="attendance" element={<AttendanceNew />} />
-        <Route path="leave-requests" element={<LeaveRequests />} />
+        <Route path="leave" element={<LeaveManagement />} />
+        <Route path="payroll" element={<Payroll />} />
         
         {/* Admin/HR Only Routes */}
         {isAdmin && (
           <>
-            <Route path="employees" element={<div>Employees Page Coming Soon</div>} />
+            <Route path="employees" element={<EmployeeList />} />
             <Route path="attendance-management" element={<AdminAttendanceManagement />} />
-            <Route path="leave-approvals" element={<div>Leave Approvals Coming Soon</div>} />
+            <Route path="leave-approvals" element={<AdminLeaveApproval />} />
+            <Route path="payroll-management" element={<AdminPayrollManagement />} />
             <Route path="departments" element={<div>Departments Coming Soon</div>} />
             <Route path="settings" element={<div>Settings Coming Soon</div>} />
           </>

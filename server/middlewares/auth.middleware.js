@@ -1,59 +1,105 @@
 import jwt from "jsonwebtoken";
-import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiError } from "../utils/apiError.js";
 import User from "../model/user.model.js";
 
-// Middleware to verify JWT token and authenticate user
-export const isAuthenticated = asyncHandler(async (req, res, next) => {
-  const { token } = req.cookies;
-
-  if (!token) {
-    throw new ApiError(401, "Please log in to access this resource");
-  }
-
+export const isAuthenticated = async (req, res, next) => {
   try {
+    const token = req.cookies?.token;
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Please log in to access this resource",
+        errors: [],
+      });
+    }
+
+
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    
+
     const user = await User.findById(decoded.id).select("-password");
-    
+
     if (!user) {
-      throw new ApiError(401, "User not found. Please log in again");
+      return res.status(401).json({
+        success: false,
+        message: "User not found. Please log in again",
+        errors: [],
+      });
     }
 
     if (!user.isActive) {
-      throw new ApiError(403, "Your account has been deactivated");
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been deactivated",
+        errors: [],
+      });
     }
 
     req.user = user;
     next();
   } catch (error) {
     if (error.name === "JsonWebTokenError") {
-      throw new ApiError(401, "Invalid token. Please log in again");
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token. Please log in again",
+        errors: [],
+      });
     }
-    if (error.name === "TokenExpiredError") {
-      throw new ApiError(401, "Token expired. Please log in again");
-    }
-    throw error;
-  }
-});
 
-// Middleware to authorize based on roles
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        success: false,
+        message: "Token expired. Please log in again",
+        errors: [],
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Authentication failed",
+      errors: [],
+    });
+  }
+};
+
+/**
+ * ===============================
+ * ROLE AUTHORIZATION MIDDLEWARE
+ * ===============================
+ * Usage: authorizeRoles("ADMIN", "HR")
+ */
 export const authorizeRoles = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      throw new ApiError(
-        403,
-        `Role '${req.user.role}' is not authorized to access this resource`
-      );
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: `Role '${req.user?.role}' is not authorized to access this resource`,
+        errors: [],
+      });
     }
     next();
   };
 };
 
-// Middleware to check if email is verified
-export const isEmailVerified = asyncHandler(async (req, res, next) => {
-  if (!req.user.isEmailVerified) {
-    throw new ApiError(403, "Please verify your email to access this resource");
+/**
+ * ===============================
+ * EMAIL VERIFICATION MIDDLEWARE
+ * ===============================
+ */
+export const isEmailVerified = (req, res, next) => {
+  if (!req.user?.isEmailVerified) {
+    return res.status(403).json({
+      success: false,
+      message: "Please verify your email to access this resource",
+      errors: [],
+    });
   }
   next();
-});
+};
+
+/**
+ * ===============================
+ * VERIFY TOKEN (ALIAS FOR isAuthenticated)
+ * ===============================
+ */
+export const verifyToken = isAuthenticated;

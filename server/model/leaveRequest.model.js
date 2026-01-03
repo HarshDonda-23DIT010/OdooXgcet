@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 const leaveRequestSchema = new mongoose.Schema(
     {
         employeeId: {
@@ -23,6 +24,8 @@ const leaveRequestSchema = new mongoose.Schema(
         totalDays: Number,
 
         reason: String,
+
+        comments: String, // Admin comments
 
         status: {
             type: String,

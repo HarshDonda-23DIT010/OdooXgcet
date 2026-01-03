@@ -1,35 +1,35 @@
-import express from 'express';
+import express from "express";
 import {
   checkIn,
   checkOut,
-  getMyAttendance,
   getTodayAttendance,
+  getMyAttendance,
   getAllAttendance,
   getAttendanceSummary,
-  updateAttendance,
-  deleteAttendance,
   exportAttendanceToExcel,
   exportEmployeesToExcel,
-} from '../controllers/attendance.controller.js';
-import { isAuthenticated, authorizeRoles } from '../middlewares/auth.middleware.js';
+  markAttendanceForEmployee,
+  updateAttendance,
+  deleteAttendance,
+} from "../controllers/attendance.controller.js";
+import { verifyToken } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-// All routes require authentication
-router.use(isAuthenticated);
 
-// Employee routes
-router.post('/check-in', checkIn);
-router.post('/check-out', checkOut);
-router.get('/my-attendance', getMyAttendance);
-router.get('/today', getTodayAttendance);
+// Employee routes - all require authentication
+router.post("/check-in", verifyToken, checkIn);
+router.post("/check-out", verifyToken, checkOut);
+router.get("/today", verifyToken, getTodayAttendance);
+router.get("/my-attendance", verifyToken, getMyAttendance);
 
-// Admin/HR routes
-router.get('/all', authorizeRoles('ADMIN', 'HR'), getAllAttendance);
-router.get('/summary', authorizeRoles('ADMIN', 'HR'), getAttendanceSummary);
-router.get('/export/excel', authorizeRoles('ADMIN', 'HR'), exportAttendanceToExcel);
-router.get('/export/employees', authorizeRoles('ADMIN', 'HR'), exportEmployeesToExcel);
-router.put('/:attendanceId', authorizeRoles('ADMIN', 'HR'), updateAttendance);
-router.delete('/:attendanceId', authorizeRoles('ADMIN', 'HR'), deleteAttendance);
+// Admin routes - require authentication and admin role
+router.get("/all", verifyToken, getAllAttendance);
+router.get("/summary", verifyToken, getAttendanceSummary);
+router.get("/export/excel", verifyToken, exportAttendanceToExcel);
+router.get("/export/employees", verifyToken, exportEmployeesToExcel);
+router.post("/mark", verifyToken, markAttendanceForEmployee);
+router.put("/:id", verifyToken, updateAttendance);
+router.delete("/:id", verifyToken, deleteAttendance);
 
 export default router;

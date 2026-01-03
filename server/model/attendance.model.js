@@ -49,12 +49,22 @@ attendanceSchema.index({ employeeId: 1, date: 1 });
 attendanceSchema.index({ userId: 1, date: 1 });
 
 // Calculate working hours before saving
-attendanceSchema.pre('save', function(next) {
+attendanceSchema.pre('save', function() {
   if (this.checkIn && this.checkOut) {
     const diffMs = this.checkOut - this.checkIn;
     this.workingHours = Number((diffMs / (1000 * 60 * 60)).toFixed(2)); // Convert to hours
+    
+    // Automatically determine status based on working hours
+    if (!this.isModified('status') || this.status === 'Absent') {
+      if (this.workingHours >= 8) {
+        this.status = 'Present';
+      } else if (this.workingHours >= 4) {
+        this.status = 'Half-day';
+      } else {
+        this.status = 'Half-day';
+      }
+    }
   }
-  next();
 });
 
 export default mongoose.model("Attendance", attendanceSchema);

@@ -6,6 +6,8 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
 import attendanceRoutes from "./routes/attendance.routes.js";
+import leaveRoutes from "./routes/leave.routes.js";
+import salaryRoutes from "./routes/salary.routes.js";
 
 dotenv.config();
 
@@ -27,6 +29,15 @@ app.use(cors({
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use("/api/leave", leaveRoutes);
+app.use("/api/salary", salaryRoutes);
+
+console.log("All routes registered:");
+console.log("- /api/auth");
+console.log("- /api/profile");
+console.log("- /api/attendance");
+console.log("- /api/leave");
+console.log("- /api/salary");
 
 // Health check route
 app.get("/", (req, res) => {
@@ -40,12 +51,13 @@ app.use((req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-    const statusCode = err.statusCode || 500;
+    const statusCode = err.statusCode || err.status || 500;
     const message = err.message || "Internal Server Error";
     
     res.status(statusCode).json({
         success: false,
         message,
+        errors: err.errors || [],
         ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
     });
 });
